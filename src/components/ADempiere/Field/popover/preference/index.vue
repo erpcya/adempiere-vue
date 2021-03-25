@@ -1,6 +1,6 @@
 <template>
   <el-dropdown trigger="click">
-    <el-button type="text" :disabled="fieldAttributes.readonly">
+    <el-button type="text" :disabled="sourceField.readonly">
       <i class="el-icon-notebook-2 el-icon--right" @click="isActive = !isActive" />
     </el-button>
     <el-dropdown-menu slot="dropdown" class="dropdown-calc">
@@ -12,13 +12,13 @@
           <span>
             {{ $t('components.preference.title') }}
             <b>
-              {{ fieldAttributes.name }}
+              {{ sourceField.name }}
             </b>
           </span>
         </div>
-        <div v-if="!isEmptyValue(descriptionOfPreference)" class="text item">
+        <div v-if="!isEmptyValue(getDescriptionOfPreference)" class="text item">
           {{
-            descriptionOfPreference
+            getDescriptionOfPreference
           }}
           <template
             v-for="(index) in fieldsListPreference"
@@ -40,25 +40,8 @@
           >
             <el-form-item>
               <p slot="label">
-                {{ fieldAttributes.name }}
+                {{ sourceField.name }}: {{ code }}
               </p>
-              <el-switch
-                v-if="fieldAttributes.componentPath === 'FieldYesNo'"
-                v-model="code"
-                :active-text="$t('components.preference.yes')"
-                :inactive-text="$t('components.preference.no')"
-                :disabled="true"
-                style="padding-top: 30%"
-              />
-              <div
-                v-else
-              >
-                <p>
-                  {{
-                    code
-                  }}
-                </p>
-              </div>
             </el-form-item>
           </el-form>
           <el-form
@@ -94,7 +77,7 @@
                 type="primary"
                 class="custom-button-address-location"
                 icon="el-icon-check"
-                @click="close()"
+                @click="sendValue()"
               />
             </samp>
           </el-col>
@@ -112,16 +95,18 @@
 </template>
 
 <script>
-// import { ID, INTEGER } from '@/utils/ADempiere/references'
+import formMixin from '@/components/ADempiere/Form/formMixin'
 import filelistPreference from './filelistPreference.js'
-import { getPreference } from '@/api/ADempiere/field/preference.js'
 import { createFieldFromDictionary } from '@/utils/ADempiere/lookupFactory'
-import { attributePreference } from '@/utils/ADempiere/valueUtils'
+import { setPreference } from '@/api/ADempiere/field/preference.js'
+import { showMessage } from '@/utils/ADempiere/notification.js'
+import language from '@/lang'
 
 export default {
   name: 'Preference',
+  mixins: [formMixin],
   props: {
-    fieldAttributes: {
+    sourceField: {
       type: [Object],
       required: true,
       default: null
@@ -130,14 +115,6 @@ export default {
       type: [String, Number, Boolean, Date, Array, Object],
       required: true,
       default: ''
-    },
-    containerUuid: {
-      type: String,
-      default: 'fiel-reference'
-    },
-    panelType: {
-      type: String,
-      default: undefined
     }
   },
   data() {
@@ -146,8 +123,7 @@ export default {
       metadataList: [],
       code: '',
       description: [],
-      isActive: false,
-      unsubscribe: () => {}
+      isActive: false
     }
   },
   computed: {
@@ -161,17 +137,8 @@ export default {
         }
       })
     },
-    descriptionOfPreference() {
-      const label = this.fieldsListPreference.filter(element => {
-        return element.value
-      })
-      if (!this.isEmptyValue(label)) {
-        if (label[0].columnName === 'AD_User_ID') {
-          return this.$t('components.preference.defaulMessageUser')
-        }
-        return this.$t('components.preference.defaulMessage')
-      }
-      return []
+    getDescriptionOfPreference() {
+      return ''
     }
   },
   watch: {
@@ -181,7 +148,7 @@ export default {
         this.setFieldsList()
       }
       if (!this.isEmptyValue(preferenceValue)) {
-        if ((typeof preferenceValue !== 'string') && (this.fieldAttributes.componentPath !== 'FieldYesNo')) {
+        if ((typeof preferenceValue !== 'string') && (this.sourceField.componentPath !== 'FieldYesNo')) {
           this.code = preferenceValue
         } else {
           this.code = preferenceValue
@@ -189,15 +156,8 @@ export default {
       }
     }
   },
-  created() {
-    this.unsubscribe = this.subscribeChanges()
-  },
-  beforeDestroy() {
-    this.unsubscribe()
-  },
   methods: {
     createFieldFromDictionary,
-    attributePreference,
     close() {
       this.$children[0].visible = false
     },
@@ -214,7 +174,7 @@ export default {
             const data = metadata
             fieldsList.push({
               ...data,
-              containerUuid: 'fiel-reference'
+              containerUuid: 'field-reference'
             })
             if (data.value) {
               this.description.push(data.name)
@@ -226,58 +186,34 @@ export default {
       this.metadataList = fieldsList
     },
     sendValue(list) {
-      const preference = this.attributePreference({
-        containerUuid: this.containerUuid,
-        panelType: this.panelType,
-        attribute: this.fieldAttributes.columnName,
+      const isForCurrentUser = this.metadataList.find(field => field.columnName === 'AD_User_ID').value
+      const isForCurrentClient = this.metadataList.find(field => field.columnName === 'AD_Client_ID').value
+      const isForCurrentOrganization = this.metadataList.find(field => field.columnName === 'AD_Org_ID').value
+      const isForCurrentContainer = this.metadataList.find(field => field.columnName === 'AD_Window_ID').value
+      //
+      setPreference({
+        parentUuid: this.sourceField.parentUuid,
+        containerUuid: this.sourceField.containerUuid,
+        attribute: this.sourceField.columnName,
         value: this.code,
-        level: list
+        isForCurrentUser,
+        isForCurrentClient,
+        isForCurrentOrganization,
+        isForCurrentContainer
       })
-      getPreference(preference)
-    },
-    changeValue(value) {
-      switch (value.columName) {
-        // case 'options':
-        case 'AD_Client_ID':
-          this.$store.commit('updateValueOfField', {
-            containerUuid: 'fiel-reference',
-            columnName: value.columName,
-            value: value.value
+        .then(preference => {
+          showMessage({
+            message: language.t('components.preference.preferenceIsOk')
           })
-          break
-        case 'AD_Org_ID':
-          this.$store.commit('updateValueOfField', {
-            containerUuid: 'fiel-reference',
-            columnName: value.columName,
-            value: value.value
+          this.close()
+        })
+        .catch(error => {
+          showMessage({
+            message: error.message,
+            type: 'error'
           })
-          break
-        case 'AD_User_ID':
-          this.$store.commit('updateValueOfField', {
-            containerUuid: 'fiel-reference',
-            columnName: value.columName,
-            value: value.value
-          })
-          break
-        case 'AD_Window_ID':
-          this.$store.commit('updateValueOfField', {
-            containerUuid: 'fiel-reference',
-            columnName: value.columName,
-            value: value.value
-          })
-          break
-      }
-    },
-    subscribeChanges() {
-      return this.$store.subscribe((mutation, state) => {
-        if (mutation.type === 'updateValueOfField') {
-          // const values = this.$store.getters.getValuesView({
-          //   containerUuid: mutation.payload.containerUuid,
-          //   format: 'object'
-          // })
-          // this.changeValue(values)
-        }
-      })
+          console.warn(`setPreference error: ${error.message}.`)
+        })
     }
   }
 }

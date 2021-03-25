@@ -1,35 +1,31 @@
-export function getPreference({
-  parentUuid,
-  containerUuid,
-  panelType,
-  attribute,
-  value,
-  level
-}) {
-  return getPreference({
-    parentUuid,
-    containerUuid,
-    panelType,
-    attribute,
-    value,
-    level
-  })
-}
+// Service for backend based on API
+// use this service for consume all related to preference of field
+import {
+  ApiRest as serviceApi
+} from '@/api/ADempiere/instances.js'
 
-export function updatePreference({
+// Update preference from API using criteria
+export function setPreference({
   parentUuid,
   containerUuid,
   panelType,
   attribute,
   value,
-  level
+  isForCurrentUser,
+  isForCurrentClient,
+  isForCurrentOrganization,
+  isForCurrentContainer
 }) {
-  return updatePreference({
-    parentUuid,
-    containerUuid,
-    panelType,
-    attribute,
-    value,
-    level
+  return serviceApi({
+    url: '/ui/set-preference',
+    data: {
+      container_uuid: parentUuid,
+      column_name: attribute,
+      value: value,
+      is_for_current_user: isForCurrentUser,
+      is_for_current_client: isForCurrentClient,
+      is_for_current_organization: isForCurrentOrganization,
+      is_for_current_container: isForCurrentContainer
+    }
   })
 }
