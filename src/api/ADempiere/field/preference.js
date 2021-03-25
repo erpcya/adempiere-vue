@@ -7,7 +7,6 @@ import {
 // Update preference from API using criteria
 export function setPreference({
   parentUuid,
-  containerUuid,
   panelType,
   attribute,
   value,

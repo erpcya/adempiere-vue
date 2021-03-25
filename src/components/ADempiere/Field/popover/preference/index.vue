@@ -193,7 +193,6 @@ export default {
       //
       setPreference({
         parentUuid: this.sourceField.parentUuid,
-        containerUuid: this.sourceField.containerUuid,
         attribute: this.sourceField.columnName,
         value: this.code,
         isForCurrentUser,
