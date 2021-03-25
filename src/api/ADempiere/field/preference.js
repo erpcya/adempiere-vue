@@ -28,3 +28,26 @@ export function setPreference({
     }
   })
 }
+
+// Delete preference based on match
+export function deletePreference({
+  parentUuid,
+  panelType,
+  attribute,
+  isForCurrentUser,
+  isForCurrentClient,
+  isForCurrentOrganization,
+  isForCurrentContainer
+}) {
+  return serviceApi({
+    url: '/ui/delete-preference',
+    data: {
+      container_uuid: parentUuid,
+      column_name: attribute,
+      is_for_current_user: isForCurrentUser,
+      is_for_current_client: isForCurrentClient,
+      is_for_current_organization: isForCurrentOrganization,
+      is_for_current_container: isForCurrentContainer
+    }
+  })
+}

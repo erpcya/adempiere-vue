@@ -143,16 +143,14 @@ export default {
   },
   watch: {
     isActive(value) {
-      const preferenceValue = this.fieldValue
+      this.code = this.$store.getters.getValueOfField({
+        parentUuid: this.sourceField.parentUuid,
+        containerUuid: this.sourceField.containerUuid,
+        columnName: this.sourceField.columnName
+      })
+      // const preferenceValue = this.fieldValue
       if (value && this.isEmptyValue(this.metadataList)) {
         this.setFieldsList()
-      }
-      if (!this.isEmptyValue(preferenceValue)) {
-        if ((typeof preferenceValue !== 'string') && (this.sourceField.componentPath !== 'FieldYesNo')) {
-          this.code = preferenceValue
-        } else {
-          this.code = preferenceValue
-        }
       }
     }
   },
