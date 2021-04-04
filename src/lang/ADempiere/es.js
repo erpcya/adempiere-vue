@@ -98,7 +98,7 @@ export default {
   documentation: {
     documentation: 'Documentación',
     github: 'Repositorio Github',
-    releases: 'Liberaciones de Versiones'
+    releases: 'Liberaciones'
   },
   permission: {
     addRole: 'Nuevo rol',
