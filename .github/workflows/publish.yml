@@ -16,8 +16,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 14
-      - run: echo {{ $GITHUB_REF }}
-      - run: sed -i "s|releaseNoForDocumentation|{{ $GITHUB_REF }}|g" config/default.json 
+      - run: echo ${{ GITHUB_REF }}
+      - run: echo ${{ github.event.release.tag_name }} 
+      - run: sed -i "s|releaseNoForDocumentation|$GITHUB_REF|g" config/default.json 
+      - run: cat config/default.json
       - run: npm i
       - run: npm test
       - run: npm run build:prod --if-present
