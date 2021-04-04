@@ -6,7 +6,7 @@ import { config } from '@/utils/ADempiere/config'
 // Fetch releases from repository
 export function fetchReleasesList() {
   return request({
-    baseURL: config.adempiere.github.url,
+    baseURL: config.repository.url,
     url: '/repos/adempiere/adempiere-vue/releases',
     method: 'get',
     headers: {

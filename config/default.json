@@ -9,9 +9,10 @@
     },
     "images": {
       "url": "https://api.erpya.com/adempiere-api/img"
-    },
-    "github": {
-      "url": "https://api.github.com"
     }
+  },
+  "repository": {
+    "url": "https://api.github.com",
+    "releaseNo": "rt-3.2"
   }
 }

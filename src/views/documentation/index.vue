@@ -10,6 +10,7 @@
 <script>
 import DropdownMenu from '@/components/Share/DropdownMenu'
 import { fetchReleasesList } from '@/api/documentation/releases'
+import { config } from '@/utils/ADempiere/config'
 
 export default {
   name: 'Documentation',
@@ -40,8 +41,13 @@ export default {
                 created_at: release.created_at
               })
             })
-            if (this.releasesList.length > 0) {
-              this.releaseNotes = this.releasesList[0]
+            if (config.repository.releaseNo !== undefined && this.releasesList.length > 0) {
+              this.releaseNotes = this.releasesList.find(release => {
+                return release.title === config.repository.releaseNo
+              })
+              if (!this.releaseNotes) {
+                this.releaseNotes = ''
+              }
             }
           }
         })
