@@ -30,7 +30,7 @@ export function request(requestValues) {
   }
   requestValues.baseURL = config.adempiere.api.url
   //  Timeout
-  if (config.adempiere.api.timeout) {
+  if (config.adempiere.api.timeout && config.adempiere.api.timeout > 0) {
     requestValues.timeout = config.adempiere.api.timeout
   }
   requestValues.params.token = getToken()
