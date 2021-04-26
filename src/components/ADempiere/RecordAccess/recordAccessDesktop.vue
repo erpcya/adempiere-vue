@@ -24,20 +24,20 @@
     >
       <div class="board-column">
         <div class="board-column-header">
-          {{ $t('data.recordAccess.hideRecord') }} ({{ getterListExclude.length }})
+          {{ $t('data.recordAccess.hideRecord') }} ({{ excludedList.length }})
         </div>
         <draggable
-          v-model="getterListExclude"
+          v-model="excludedList"
           :group="group"
           v-bind="$attrs"
           class="board-column-content"
         >
           <div
-            v-for="element in getterListExclude"
-            :key="element.UUID"
+            v-for="element in excludedList"
+            :key="element.roleId"
             class="board-item"
           >
-            {{ element.clientName }}
+            {{ element.roleName }}
           </div>
 
         </draggable>
@@ -50,21 +50,21 @@
     >
       <div class="board-column">
         <div class="board-column-header">
-          {{ $t('data.recordAccess.recordDisplay') }} {{ getterListInclude.length }}
+          {{ $t('data.recordAccess.recordDisplay') }} {{ includedList.length }}
         </div>
         <draggable
-          v-model="getterListInclude"
+          v-model="includedList"
           :group="group"
           v-bind="$attrs"
           class="board-column-content"
           @change="handleChange"
         >
           <div
-            v-for="element in getterListInclude"
-            :key="element.UUID"
+            v-for="element in includedList"
+            :key="element.roleId"
             class="board-item"
           >
-            {{ element.name }}
+            {{ element.roleName }}
             <el-divider direction="vertical" />
             {{ $t('data.recordAccess.isReadonly') }} <el-checkbox v-model="isReadonly" />
             <el-divider direction="vertical" />
@@ -78,7 +78,7 @@
 
 <script>
 import draggable from 'vuedraggable'
-
+import { getRecordAccess } from '@/api/ADempiere/actions/record-access.js'
 export default {
   name: 'RecordAccessDesktop',
   components: {
@@ -115,20 +115,33 @@ export default {
       group: 'sequence',
       isReadonly: false,
       isDependentEntities: true,
-      getterDataRecords: this.$store.getters['user/getRoles']
+      recordAccess: {
+        tableName: '',
+        recordId: 0,
+        recordUuid: '',
+        roles: []
+      }
     }
   },
   computed: {
-    getterListExclude: {
+    excludedList: {
       get() {
-        return this.getterDataRecords.filter(item => item.isPersonalLock === false)
+        if (this.recordAccess.roles) {
+          return this.recordAccess.roles.filter(role => !role.isPersonalLock)
+        } else {
+          return []
+        }
       },
       set(value) {
       }
     },
-    getterListInclude: {
+    includedList: {
       get() {
-        return this.getterDataRecords.filter(item => item.isPersonalLock === true)
+        if (this.recordAccess.roles) {
+          return this.recordAccess.roles.filter(role => role.isPersonalLock)
+        } else {
+          return []
+        }
       },
       set(value) {
       }
@@ -139,22 +152,33 @@ export default {
     }
   },
   created() {
-    const record = this.getterDataRecords.map(record => {
-      return {
-        id: record.id,
-        uuid: record.uuid,
-        IsExclude: record.isPersonalLock,
-        isDependentEntities: this.isDependentEntities,
-        isReadonly: this.isReadonly
-      }
+    getRecordAccess({
+      tableName: 'M_Product_Group',
+      recordId: 1000000
     })
-    this.$store.dispatch('changeList', record)
+      .then(access => {
+        this.recordAccess.tableName = access.tableName
+        this.recordAccess.recordId = access.recordId
+        this.recordAccess.recordUuid = access.recordUuid
+        access.availableRoles.forEach(role => {
+          this.recordAccess.roles.push({
+            ...role,
+            isPersonalLock: false
+          })
+        })
+        access.currentRoles.forEach(role => {
+          this.recordAccess.roles.push({
+            ...role,
+            isPersonalLock: true
+          })
+        })
+      })
   },
   methods: {
     handleChange(value) {
       const action = Object.keys(value)[0] // get property
-      const element = value.[action].element
-      const index = this.getterDataRecords.findIndex(role => role.id === element.id)
+      const element = value[action].element
+      const index = this.recordAccess.roles.findIndex(role => role.roleId === element.roleId)
       switch (action) {
         case 'added':
           this.addItem({
@@ -178,7 +202,7 @@ export default {
       index,
       element
     }) {
-      this.getterDataRecords[index].isPersonalLock = !element.isPersonalLock
+      this.recordAccess.roles[index].isPersonalLock = true
     },
     /**
      * @param {number} index: the index of the element before remove
@@ -188,17 +212,7 @@ export default {
       index,
       element
     }) {
-      this.getterDataRecords[index].isPersonalLock = !element.isPersonalLock
-      const record = this.getterDataRecords.map(record => {
-        return {
-          id: record.id,
-          uuid: record.uuid,
-          IsExclude: record.isPersonalLock,
-          isDependentEntities: this.isDependentEntities,
-          isReadonly: this.isReadonly
-        }
-      })
-      this.$store.dispatch('changeList', record)
+      this.recordAccess.roles[index].isPersonalLock = false
     },
     getOrder(arrayToSort, orderBy = this.order) {
       return arrayToSort.sort((itemA, itemB) => {

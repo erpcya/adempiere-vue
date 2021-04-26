@@ -74,9 +74,7 @@ import MainPanel from '@/components/ADempiere/Panel'
 import SequenceOrder from '@/components/ADempiere/SequenceOrder'
 import RecordAccess from '@/components/ADempiere/RecordAccess'
 import { showNotification } from '@/utils/ADempiere/notification'
-import {
-  updateAccessRecord
-} from '@/api/ADempiere/private-access'
+
 export default {
   name: 'ModalProcess',
   components: {
@@ -232,7 +230,8 @@ export default {
       }
       if (action.action === undefined) {
         const list = this.$store.getters.getListRecordAcces
-        updateAccessRecord(list)
+        // updateAccessRecord(list)
+        console.log(list)
       }
     }
   }
