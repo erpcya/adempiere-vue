@@ -53,25 +53,19 @@ export function getRecordAccess({
  * @param {array}  listRol
  */
 export function setRecordAccess({
-  roleId,
-  roleUuid,
-  roleName,
-  isActive,
-  isExclude,
-  isReadOnly,
-  isDependentEntities
+  recordId,
+  recordUuid,
+  tableName,
+  recordAccesses
 }) {
   return request({
     url: '/ui/set-record-access',
     method: 'post',
     params: {
-      role_id: roleId,
-      role_uuid: roleUuid,
-      role_name: roleName,
-      is_active: isActive,
-      is_exclude: isExclude,
-      is_read_only: isReadOnly,
-      is_dependent_entities: isDependentEntities
+      table_name: tableName,
+      id: recordId,
+      uuid: recordUuid,
+      recordAccesses
     }
   })
     .then(response => {
