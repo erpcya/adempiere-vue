@@ -55,7 +55,7 @@
       >
         <div class="board-column">
           <div class="board-column-header">
-            {{ $t('data.recordAccess.recordDisplay') }} {{ includedList.length }}
+            {{ $t('data.recordAccess.recordDisplay') }} ({{ includedList.length }})
           </div>
           <el-scrollbar wrap-class="scroll-child">
             <draggable
@@ -111,7 +111,7 @@
       <el-button
         type="primary"
         icon="el-icon-check"
-        @click="sendRecordAcces(includedList)"
+        @click="saveRecordAccess(includedList)"
       />
     </span>
   </div>
@@ -119,168 +119,13 @@
 
 <script>
 import draggable from 'vuedraggable'
-import { getRecordAccess, setRecordAccess } from '@/api/ADempiere/actions/record-access.js'
+import recordAccessMixin from './recordAccess.js'
 export default {
   name: 'RecordAccessDesktop',
   components: {
     draggable
   },
-  props: {
-    parentUuid: {
-      type: String,
-      default: undefined
-    },
-    containerUuid: {
-      type: String,
-      default: undefined
-    },
-    order: {
-      type: String,
-      default: undefined
-    },
-    included: {
-      type: String,
-      default: undefined
-    },
-    keyColumn: {
-      type: String,
-      default: undefined
-    },
-    identifiersList: {
-      type: Array,
-      default: undefined
-    }
-  },
-  data() {
-    return {
-      group: 'sequence',
-      isReadonly: false,
-      isDependentEntities: true,
-      recordAccess: {
-        tableName: '',
-        recordId: 0,
-        recordUuid: '',
-        roles: []
-      }
-    }
-  },
-  computed: {
-    excludedList: {
-      get() {
-        if (this.recordAccess.roles) {
-          return this.recordAccess.roles.filter(role => !role.isPersonalLock)
-        } else {
-          return []
-        }
-      },
-      set(value) {
-      }
-    },
-    includedList: {
-      get() {
-        if (this.recordAccess.roles) {
-          return this.recordAccess.roles.filter(role => role.isPersonalLock)
-        } else {
-          return []
-        }
-      },
-      set(value) {
-      }
-    },
-    getIdentifiersList() {
-      return this.identifiersList
-        .filter(item => item.componentPath !== 'FieldSelect')
-    }
-  },
-  created() {
-    getRecordAccess({
-      tableName: 'M_Product_Group',
-      recordId: 1000000
-    })
-      .then(access => {
-        this.recordAccess.tableName = access.tableName
-        this.recordAccess.recordId = access.recordId
-        this.recordAccess.recordUuid = access.recordUuid
-        access.availableRoles.forEach(role => {
-          this.recordAccess.roles.push({
-            ...role,
-            isPersonalLock: false
-          })
-        })
-        access.currentRoles.forEach(role => {
-          this.recordAccess.roles.push({
-            ...role,
-            isPersonalLock: true
-          })
-        })
-      })
-  },
-  methods: {
-    handleChange(value) {
-      const action = Object.keys(value)[0] // get property
-      const element = value[action].element
-      const index = this.recordAccess.roles.findIndex(role => role.roleId === element.roleId)
-      switch (action) {
-        case 'added':
-          this.addItem({
-            index,
-            element
-          })
-          break
-        case 'removed':
-          this.deleteItem({
-            index,
-            element
-          })
-          break
-      }
-    },
-    /**
-     * @param {number} index: the index of the added element
-     * @param {object} element: the added element
-     */
-    addItem({
-      index,
-      element
-    }) {
-      this.recordAccess.roles[index].isPersonalLock = true
-    },
-    /**
-     * @param {number} index: the index of the element before remove
-     * @param {object} element: the removed element
-     */
-    deleteItem({
-      index,
-      element
-    }) {
-      this.recordAccess.roles[index].isPersonalLock = false
-    },
-    getOrder(arrayToSort, orderBy = this.order) {
-      return arrayToSort.sort((itemA, itemB) => {
-        return itemA[orderBy] - itemB[orderBy]
-      })
-    },
-    sendRecordAcces(recordAccesses) {
-      setRecordAccess({
-        tableName: 'M_Product_Group',
-        recordId: 1000000,
-        recordAccesses
-      })
-        .then(responseRercord => {
-          console.log({
-            responseRercord
-          })
-        })
-      this.close()
-    },
-    close() {
-      this.$store.dispatch('setShowDialog', {
-        type: 'window',
-        action: undefined
-      })
-      this.$store.commit('setRecordAccess', false)
-    }
-  }
+  mixins: [recordAccessMixin]
 }
 </script>
 

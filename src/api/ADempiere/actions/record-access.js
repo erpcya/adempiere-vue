@@ -61,11 +61,21 @@ export function setRecordAccess({
   return request({
     url: '/ui/set-record-access',
     method: 'post',
-    params: {
+    data: {
       table_name: tableName,
       id: recordId,
       uuid: recordUuid,
-      recordAccesses
+      record_accesses: recordAccesses.map(access => {
+        return {
+          role_id: access.roleId,
+          role_uuid: access.roleUuid,
+          role_name: access.roleName,
+          is_active: access.isActive,
+          is_exclude: access.isExclude,
+          is_read_only: access.isReadOnly,
+          is_dependent_entities: access.isDependentEntities
+        }
+      })
     }
   })
     .then(response => {
