@@ -54,7 +54,7 @@
         />
       </template>
     </div>
-    <span slot="footer" class="dialog-footer">
+    <span v-if="!showRecordAccess" slot="footer" class="dialog-footer">
       <el-button
         type="danger"
         icon="el-icon-close"
@@ -108,7 +108,7 @@ export default {
       if (this.isMobile) {
         return 80
       }
-      return 50
+      return 80
     },
     isVisibleDialog() {
       return this.$store.state['process/index'].isVisibleDialog

@@ -16,69 +16,110 @@
  along with this program.  If not, see <https:www.gnu.org/licenses/>.
 -->
 <template>
-  <div class="board">
-    <div
-      :key="1"
-      class="kanban todo"
-      header-text="Todo"
-    >
-      <div class="board-column">
-        <div class="board-column-header">
-          {{ $t('data.recordAccess.hideRecord') }} ({{ excludedList.length }})
-        </div>
-        <draggable
-          v-model="excludedList"
-          :group="group"
-          v-bind="$attrs"
-          class="board-column-content"
-        >
-          <div
-            v-for="element in excludedList"
-            :key="element.roleId"
-            class="board-item"
-          >
-            {{ element.roleName }}
+  <div>
+    <div class="board">
+      <div
+        :key="1"
+        class="kanban todo"
+        header-text="Todo"
+        style="padding: 0px;margin: 0px;width: 300px;"
+      >
+        <div class="board-column">
+          <div class="board-column-header">
+            {{ $t('data.recordAccess.hideRecord') }} ({{ excludedList.length }})
           </div>
+          <el-scrollbar wrap-class="scroll-child">
+            <draggable
+              v-model="excludedList"
+              :group="group"
+              v-bind="$attrs"
+              class="board-column-content"
+            >
+              <div
+                v-for="element in excludedList"
+                :key="element.roleId"
+                class="board-item"
+              >
+                {{ element.roleName }}
+              </div>
 
-        </draggable>
-      </div>
-    </div>
-    <div
-      :key="2"
-      class="kanban working"
-      header-text="Working"
-    >
-      <div class="board-column">
-        <div class="board-column-header">
-          {{ $t('data.recordAccess.recordDisplay') }} {{ includedList.length }}
+            </draggable>
+          </el-scrollbar>
         </div>
-        <draggable
-          v-model="includedList"
-          :group="group"
-          v-bind="$attrs"
-          class="board-column-content"
-          @change="handleChange"
-        >
-          <div
-            v-for="element in includedList"
-            :key="element.roleId"
-            class="board-item"
-          >
-            {{ element.roleName }}
-            <el-divider direction="vertical" />
-            {{ $t('data.recordAccess.isReadonly') }} <el-checkbox v-model="isReadonly" />
-            <el-divider direction="vertical" />
-            {{ $t('data.recordAccess.isDependentEntities') }} <el-checkbox v-model="isDependentEntities" />
+      </div>
+      <div
+        :key="2"
+        class="kanban working"
+        header-text="Working"
+        style="padding: 0px;margin: 0px;width: 600px;"
+      >
+        <div class="board-column">
+          <div class="board-column-header">
+            {{ $t('data.recordAccess.recordDisplay') }} {{ includedList.length }}
           </div>
-        </draggable>
+          <el-scrollbar wrap-class="scroll-child">
+            <draggable
+              v-model="includedList"
+              :group="group"
+              v-bind="$attrs"
+              class="board-column-content"
+              @change="handleChange"
+            >
+              <div
+                v-for="(element, index) in includedList"
+                :key="element.roleId"
+                class="board-item"
+                style="height: 50%;padding-left: 0px;padding-right: 0px;"
+              >
+                <el-table
+                  v-if="!isEmptyValue(includedList)"
+                  :data="[includedList[index]]"
+                  border
+                  :show-header="false"
+                >
+                  <el-table-column
+                    prop="roleName"
+                  />
+                  <el-table-column
+                    fixed="right"
+                    width="120"
+                  >
+                    <template slot-scope="scope">
+                      {{ $t('data.recordAccess.isReadonly') }} <el-checkbox v-model="scope.row.isReadOnly" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    fixed="right"
+                  >
+                    <template slot-scope="scope">
+                      {{ $t('data.recordAccess.isDependentEntities') }} <el-checkbox v-model="scope.row.isDependentEntities" />
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </draggable>
+          </el-scrollbar>
+        </div>
       </div>
     </div>
+    <span slot="footer" class="dialog-footer" style="position: absolute;right: 1.99%;bottom: 3%;">
+      <el-button
+        type="danger"
+        icon="el-icon-close"
+        @click="close"
+      />
+      <el-button
+        type="primary"
+        icon="el-icon-check"
+        @click="sendRecordAcces(includedList)"
+      />
+    </span>
   </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
-import { getRecordAccess } from '@/api/ADempiere/actions/record-access.js'
+import { getRecordAccess, setRecordAccess } from '@/api/ADempiere/actions/record-access.js'
 export default {
   name: 'RecordAccessDesktop',
   components: {
@@ -218,6 +259,26 @@ export default {
       return arrayToSort.sort((itemA, itemB) => {
         return itemA[orderBy] - itemB[orderBy]
       })
+    },
+    sendRecordAcces(recordAccesses) {
+      setRecordAccess({
+        tableName: 'M_Product_Group',
+        recordId: 1000000,
+        recordAccesses
+      })
+        .then(responseRercord => {
+          console.log({
+            responseRercord
+          })
+        })
+      this.close()
+    },
+    close() {
+      this.$store.dispatch('setShowDialog', {
+        type: 'window',
+        action: undefined
+      })
+      this.$store.commit('setRecordAccess', false)
     }
   }
 }
@@ -270,6 +331,7 @@ export default {
 </style>
 <style lang="scss">
   .board {
+    height: 400px;
     width: 100%;
     margin-left: 20px;
     display: flex;
