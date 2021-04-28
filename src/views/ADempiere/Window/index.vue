@@ -185,9 +185,20 @@
                           </div>
                         </div>
                         <modal-dialog
+                          v-if="!showRecordAccess"
                           :parent-uuid="windowUuid"
                           :container-uuid="windowMetadata.currentTabUuid"
                         />
+                        <embedded
+                          v-else
+                          :parent-uuid="windowUuid"
+                          :container-uuid="windowMetadata.currentTabUuid"
+                        >
+                          <record-access
+                            :table-name="getTableName"
+                            :record="getRecord"
+                          />
+                        </embedded>
                         <div class="small-4 columns">
                           <div class="w">
                             <div class="open-left" />

@@ -22,87 +22,93 @@
         :key="1"
         class="kanban todo"
         header-text="Todo"
-        style="padding: 0px;margin: 0px;width: 300px;"
+        style="padding: 0px;margin: 0px;width: 35%;padding-right: 3%;"
       >
         <div class="board-column">
           <div class="board-column-header">
             {{ $t('data.recordAccess.hideRecord') }} ({{ excludedList.length }})
           </div>
-          <el-scrollbar wrap-class="scroll-child">
-            <draggable
-              v-model="excludedList"
-              :group="group"
-              v-bind="$attrs"
-              class="board-column-content"
+          <draggable
+            v-model="excludedList"
+            :group="group"
+            v-bind="$attrs"
+            class="board-column-content"
+          >
+            <div
+              v-for="(element, index) in excludedList"
+              :key="element.roleUuid"
+              class="board-item"
+              style="height: 50%;padding-left: 0px;padding-right: 0px;"
             >
-              <div
-                v-for="element in excludedList"
-                :key="element.roleId"
-                class="board-item"
+              <el-table
+                v-if="!isEmptyValue(excludedList)"
+                :data="[excludedList[index]]"
+                border
+                :show-header="false"
               >
-                {{ element.roleName }}
-              </div>
+                <el-table-column
+                  prop="roleName"
+                />
+              </el-table>
+            </div>
 
-            </draggable>
-          </el-scrollbar>
+          </draggable>
         </div>
       </div>
       <div
         :key="2"
         class="kanban working"
         header-text="Working"
-        style="padding: 0px;margin: 0px;width: 600px;"
+        style="padding: 0px;margin: 0px;width: 65%;padding-right: 3%;"
       >
         <div class="board-column">
           <div class="board-column-header">
             {{ $t('data.recordAccess.recordDisplay') }} ({{ includedList.length }})
           </div>
-          <el-scrollbar wrap-class="scroll-child">
-            <draggable
-              v-model="includedList"
-              :group="group"
-              v-bind="$attrs"
-              class="board-column-content"
-              @change="handleChange"
+          <draggable
+            v-model="includedList"
+            :group="group"
+            v-bind="$attrs"
+            class="board-column-content"
+            @change="handleChange"
+          >
+            <div
+              v-for="(element, index) in includedList"
+              :key="element.roleUuid"
+              class="board-item"
+              style="height: 50%;padding-left: 0px;padding-right: 0px;"
             >
-              <div
-                v-for="(element, index) in includedList"
-                :key="element.roleId"
-                class="board-item"
-                style="height: 50%;padding-left: 0px;padding-right: 0px;"
+              <el-table
+                v-if="!isEmptyValue(includedList)"
+                :data="[includedList[index]]"
+                border
+                :show-header="false"
               >
-                <el-table
-                  v-if="!isEmptyValue(includedList)"
-                  :data="[includedList[index]]"
-                  border
-                  :show-header="false"
+                <el-table-column
+                  prop="roleName"
+                  min-width="150"
+                />
+                <el-table-column
+                  fixed="right"
                 >
-                  <el-table-column
-                    prop="roleName"
-                  />
-                  <el-table-column
-                    fixed="right"
-                    width="120"
-                  >
-                    <template slot-scope="scope">
-                      {{ $t('data.recordAccess.isReadonly') }} <el-checkbox v-model="scope.row.isReadOnly" />
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    fixed="right"
-                  >
-                    <template slot-scope="scope">
-                      {{ $t('data.recordAccess.isDependentEntities') }} <el-checkbox v-model="scope.row.isDependentEntities" />
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-            </draggable>
-          </el-scrollbar>
+                  <template slot-scope="scope">
+                    {{ $t('data.recordAccess.isReadonly') }} <el-switch v-model="scope.row.isReadOnly" />
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  fixed="right"
+                >
+                  <template slot-scope="scope">
+                    {{ $t('data.recordAccess.isDependentEntities') }} <el-switch v-model="scope.row.isDependentEntities" />
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </draggable>
         </div>
       </div>
     </div>
-    <span slot="footer" class="dialog-footer" style="position: absolute;right: 1.99%;bottom: 3%;">
+    <span slot="footer" class="dialog-footer" style="float: right;padding-top: 1%;">
       <el-button
         type="danger"
         icon="el-icon-close"
@@ -175,6 +181,26 @@ export default {
   }
 </style>
 <style lang="scss">
+  .board-column .board-column-content[data-v-67e5b2d0] {
+    max-height: 350px;
+    height: auto;
+    overflow: auto;
+    border: 10px solid transparent;
+    min-height: 60px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+  }
   .board {
     height: 400px;
     width: 100%;

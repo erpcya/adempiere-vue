@@ -426,11 +426,11 @@ export default {
         }
       }
       if (this.isWindow && this.isEmptyValue(this.actions.find(element => element.action === 'recordAccess'))) {
-        this.$store.dispatch('addAttribute', {
-          tableName: this.tableNameCurrentTab,
-          recordId: this.getCurrentRecord[this.tableNameCurrentTab + '_ID'],
-          recordUuid: this.$route.query.action
-        })
+        // this.$store.dispatch('addAttribute', {
+        //   tableName: this.tableNameCurrentTab,
+        //   recordId: this.getCurrentRecord[this.tableNameCurrentTab + '_ID'],
+        //   recordUuid: this.$route.query.action
+        // })
         this.actions.push(this.recordAccess)
       }
 
