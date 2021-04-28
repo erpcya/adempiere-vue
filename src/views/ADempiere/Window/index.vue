@@ -328,6 +328,8 @@
       >
         <record-access
           v-if="showRecordAccess"
+          :table-name="getTableName"
+          :record="getRecord"
         />
         <component
           :is="componentRender"
