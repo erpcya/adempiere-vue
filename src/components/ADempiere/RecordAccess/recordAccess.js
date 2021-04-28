@@ -93,7 +93,6 @@ export default {
     }
   },
   created() {
-    //  TODO: Add dynamic table and record id
     getRecordAccess({
       tableName: this.tableName,
       recordId: this.record[this.tableName + '_ID'],
@@ -162,7 +161,6 @@ export default {
       })
     },
     saveRecordAccess(recordAccesses) {
-      //  TODO: Add dynamic table and record id
       setRecordAccess({
         tableName: this.tableName,
         recordId: this.record[this.tableName + '_ID'],
@@ -189,6 +187,7 @@ export default {
         action: undefined
       })
       this.$store.commit('setRecordAccess', false)
+      this.$store.commit('changeShowRigthPanel', false)
     }
   }
 }
