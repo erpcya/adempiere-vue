@@ -43,6 +43,14 @@ export default {
     identifiersList: {
       type: Array,
       default: undefined
+    },
+    record: {
+      type: Object,
+      default: () => {}
+    },
+    tableName: {
+      type: String,
+      default: undefined
     }
   },
   data() {
@@ -51,8 +59,6 @@ export default {
       isReadonly: false,
       isDependentEntities: true,
       recordAccess: {
-        tableName: '',
-        recordId: 0,
         recordUuid: '',
         roles: []
       }
@@ -89,8 +95,9 @@ export default {
   created() {
     //  TODO: Add dynamic table and record id
     getRecordAccess({
-      tableName: 'M_Product_Group',
-      recordId: 1000000
+      tableName: this.tableName,
+      recordId: this.record[this.tableName + '_ID'],
+      recordUuid: this.record.UUID
     })
       .then(access => {
         this.recordAccess.tableName = access.tableName
@@ -157,8 +164,9 @@ export default {
     saveRecordAccess(recordAccesses) {
       //  TODO: Add dynamic table and record id
       setRecordAccess({
-        tableName: 'M_Product_Group',
-        recordId: 1000000,
+        tableName: this.tableName,
+        recordId: this.record[this.tableName + '_ID'],
+        recordUuid: this.record.UUID,
         recordAccesses
       })
         .then(response => {
